@@ -1,0 +1,596 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ═══════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════
+
+enum RegimeTributario {
+  SIMPLES_NACIONAL
+  LUCRO_PRESUMIDO
+  LUCRO_REAL
+}
+
+enum Role {
+  admin
+  financeiro
+  faturamento
+  almoxarife
+  contador
+}
+
+enum TipoNota {
+  NFE
+  NFSE
+  NFSE_LOC
+}
+
+enum StatusNota {
+  RASCUNHO
+  ENVIANDO
+  AUTORIZADA
+  CANCELADA
+  DENEGADA
+  ERRO
+}
+
+enum TipoProduto {
+  PRODUTO
+  SERVICO
+}
+
+enum TipoCadastro {
+  CLIENTE
+  FORNECEDOR
+}
+
+enum TipoPessoa {
+  PF
+  PJ
+}
+
+enum TipoMovimentacao {
+  ENTRADA_COMPRA
+  SAIDA_VENDA
+  ENTRADA_DEVOLUCAO_VENDA
+  SAIDA_DEVOLUCAO_COMPRA
+  AJUSTE_POSITIVO
+  AJUSTE_NEGATIVO
+  TRANSFERENCIA_ENTRADA
+  TRANSFERENCIA_SAIDA
+}
+
+enum StatusConta {
+  ABERTO
+  PARCIAL
+  QUITADO
+  VENCIDO
+  CANCELADO
+  PENDENTE_APROVACAO
+}
+
+enum StatusNotaCompra {
+  PENDENTE
+  CONFIRMADA
+  CANCELADA
+}
+
+enum TipoConta {
+  CORRENTE
+  POUPANCA
+}
+
+// ═══════════════════════════════════════════════════════
+// EMPRESA & USUÁRIOS
+// ═══════════════════════════════════════════════════════
+
+model Empresa {
+  id                       String           @id @default(cuid())
+  razaoSocial              String
+  nomeFantasia             String?
+  cnpj                     String           @unique
+  inscricaoEstadual        String?
+  inscricaoMunicipal       String?
+  regimeTributario         RegimeTributario
+  hasEstoque               Boolean          @default(false)
+  cep                      String
+  logradouro               String
+  numero                   String
+  complemento              String?
+  bairro                   String
+  municipio                String
+  uf                       String           @db.Char(2)
+  codigoMunicipio          String
+  cnae                     String?
+  telefone                 String?
+  email                    String?
+  certificadoPath          String?
+  certificadoSenhaEnc      String?
+  focusNfeToken            String?
+  limiteAprovacaoPagamento Int              @default(500000)
+  diasVencimentoPadrao     Int              @default(30)
+  ativa                    Boolean          @default(true)
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  usuarios             UsuarioEmpresa[]
+  clientesFornecedores ClienteFornecedor[]
+  produtos             Produto[]
+  notasFiscais         NotaFiscal[]
+  notasCompra          NotaCompra[]
+  movimentacoesEstoque MovimentacaoEstoque[]
+  contasPagar          ContaPagar[]
+  contasReceber        ContaReceber[]
+  contasBancarias      ContaBancaria[]
+  lancamentosBancarios LancamentoBancario[]
+  conciliacoes         Conciliacao[]
+  spedArquivos         SpedArquivo[]
+
+  @@map("empresas")
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senhaHash String
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  empresas UsuarioEmpresa[]
+
+  @@map("usuarios")
+}
+
+model UsuarioEmpresa {
+  id        String   @id @default(cuid())
+  usuarioId String
+  empresaId String
+  role      Role
+  createdAt DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, empresaId])
+  @@map("usuarios_empresas")
+}
+
+// ═══════════════════════════════════════════════════════
+// CADASTROS
+// ═══════════════════════════════════════════════════════
+
+model ClienteFornecedor {
+  id                 String         @id @default(cuid())
+  empresaId          String
+  tipo               TipoCadastro[]
+  tipoPessoa         TipoPessoa
+  razaoSocial        String?
+  nomeFantasia       String?
+  cnpj               String?
+  inscricaoEstadual  String?
+  inscricaoMunicipal String?
+  nomeCompleto       String?
+  cpf                String?
+  cep                String?
+  logradouro         String?
+  numero             String?
+  complemento        String?
+  bairro             String?
+  municipio          String?
+  uf                 String?        @db.Char(2)
+  codigoMunicipio    String?
+  email              String?
+  telefone           String?
+  limiteCredito      Int?
+  condicaoPagamento  String?
+  ativo              Boolean        @default(true)
+  observacoes        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  empresa       Empresa        @relation(fields: [empresaId], references: [id])
+  notasFiscais  NotaFiscal[]
+  notasCompra   NotaCompra[]
+  contasPagar   ContaPagar[]
+  contasReceber ContaReceber[]
+
+  @@index([empresaId, cnpj])
+  @@index([empresaId, cpf])
+  @@map("clientes_fornecedores")
+}
+
+model Produto {
+  id               String      @id @default(cuid())
+  empresaId        String
+  codigo           String
+  descricao        String
+  tipo             TipoProduto
+  ncm              String?
+  cest             String?
+  cfopPadrao       String?
+  cstIcms          String?
+  cstPis           String?
+  cstCofins        String?
+  ean              String?
+  unidade          String
+  pesoLiquido      Float?
+  pesoBruto        Float?
+  codigoServico    String?
+  aliquotaIss      Int?
+  itemListaServico String?
+  aliquotaIpi      Int?
+  aliquotaPis      Int?
+  aliquotaCofins   Int?
+  temST            Boolean     @default(false)
+  precoCusto       Int?
+  precoVenda       Int         @default(0)
+  estoqueMinimo    Float?
+  ativo            Boolean     @default(true)
+  observacoes      String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  empresa         Empresa               @relation(fields: [empresaId], references: [id])
+  itensDaNota     ItemNota[]
+  itensNotaCompra ItemNotaCompra[]
+  movimentacoes   MovimentacaoEstoque[]
+  saldoEstoque    SaldoEstoque?
+
+  @@unique([empresaId, codigo])
+  @@index([empresaId, tipo])
+  @@map("produtos")
+}
+
+// ═══════════════════════════════════════════════════════
+// FATURAMENTO (NOTAS FISCAIS DE SAÍDA)
+// ═══════════════════════════════════════════════════════
+
+model NotaFiscal {
+  id                 String     @id @default(cuid())
+  empresaId          String
+  tipo               TipoNota
+  status             StatusNota @default(RASCUNHO)
+  numero             Int?
+  serie              String     @default("1")
+  referencia         String     @unique
+  clienteId          String
+  naturezaOperacao   String
+  dataEmissao        DateTime   @default(now())
+  dataCompetencia    DateTime?
+  dataSaida          DateTime?
+  valorProdutos      Int        @default(0)
+  valorServicos      Int        @default(0)
+  valorDesconto      Int        @default(0)
+  valorFrete         Int        @default(0)
+  valorSeguro        Int        @default(0)
+  valorOutras        Int        @default(0)
+  valorIcms          Int        @default(0)
+  valorIpi           Int        @default(0)
+  valorPis           Int        @default(0)
+  valorCofins        Int        @default(0)
+  valorIss           Int        @default(0)
+  valorIr            Int        @default(0)
+  valorCsll          Int        @default(0)
+  valorInss          Int        @default(0)
+  valorTotal         Int        @default(0)
+  cfop               String?
+  modalidadeFrete    Int?
+  codigoServico      String?
+  municipioPrestacao String?
+  discriminacao      String?
+  chaveAcesso        String?
+  protocolo          String?
+  xmlAutorizado      String?
+  danfePath          String?
+  codigoVerificacao  String?
+  linkNfse           String?
+  mensagemErro       String?
+  cancelada          Boolean    @default(false)
+  motivoCancelamento String?
+  dataCancelamento   DateTime?
+  xmlCancelamento    String?
+  observacoes        String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  empresa       Empresa               @relation(fields: [empresaId], references: [id])
+  cliente       ClienteFornecedor     @relation(fields: [clienteId], references: [id])
+  itens         ItemNota[]
+  contaReceber  ContaReceber?
+  movimentacoes MovimentacaoEstoque[]
+
+  @@index([empresaId, status])
+  @@index([empresaId, tipo])
+  @@index([empresaId, dataEmissao])
+  @@map("notas_fiscais")
+}
+
+model ItemNota {
+  id             String  @id @default(cuid())
+  notaId         String
+  produtoId      String
+  ordem          Int
+  quantidade     Float
+  valorUnitario  Int
+  valorDesconto  Int     @default(0)
+  valorTotal     Int
+  cfop           String
+  ncm            String?
+  cstIcms        String?
+  cstPis         String?
+  cstCofins      String?
+  baseIcms       Int     @default(0)
+  aliquotaIcms   Int     @default(0)
+  valorIcms      Int     @default(0)
+  baseIpi        Int     @default(0)
+  aliquotaIpi    Int     @default(0)
+  valorIpi       Int     @default(0)
+  basePis        Int     @default(0)
+  aliquotaPis    Int     @default(0)
+  valorPis       Int     @default(0)
+  baseCofins     Int     @default(0)
+  aliquotaCofins Int     @default(0)
+  valorCofins    Int     @default(0)
+
+  nota    NotaFiscal @relation(fields: [notaId], references: [id], onDelete: Cascade)
+  produto Produto    @relation(fields: [produtoId], references: [id])
+
+  @@map("itens_nota")
+}
+
+// ═══════════════════════════════════════════════════════
+// COMPRAS & ESTOQUE
+// ═══════════════════════════════════════════════════════
+
+model NotaCompra {
+  id            String           @id @default(cuid())
+  empresaId     String
+  fornecedorId  String
+  status        StatusNotaCompra @default(PENDENTE)
+  chaveAcesso   String           @unique
+  numero        String
+  serie         String
+  dataEmissao   DateTime
+  dataEntrada   DateTime         @default(now())
+  valorProdutos Int
+  valorFrete    Int              @default(0)
+  valorDesconto Int              @default(0)
+  valorIcms     Int              @default(0)
+  valorIpi      Int              @default(0)
+  valorSt       Int              @default(0)
+  valorTotal    Int
+  xmlPath       String?
+  observacoes   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  empresa       Empresa               @relation(fields: [empresaId], references: [id])
+  fornecedor    ClienteFornecedor     @relation(fields: [fornecedorId], references: [id])
+  itens         ItemNotaCompra[]
+  contaPagar    ContaPagar?
+  movimentacoes MovimentacaoEstoque[]
+
+  @@index([empresaId, fornecedorId])
+  @@index([empresaId, dataEmissao])
+  @@map("notas_compra")
+}
+
+model ItemNotaCompra {
+  id               String  @id @default(cuid())
+  notaCompraId     String
+  produtoId        String?
+  descricao        String
+  ncm              String?
+  cfop             String
+  unidade          String
+  quantidade       Float
+  valorUnitario    Int
+  valorTotal       Int
+  valorIcms        Int     @default(0)
+  valorIpi         Int     @default(0)
+  valorSt          Int     @default(0)
+  codigoFornecedor String?
+
+  notaCompra NotaCompra @relation(fields: [notaCompraId], references: [id], onDelete: Cascade)
+  produto    Produto?   @relation(fields: [produtoId], references: [id])
+
+  @@map("itens_nota_compra")
+}
+
+model SaldoEstoque {
+  id         String   @id @default(cuid())
+  empresaId  String
+  produtoId  String   @unique
+  quantidade Float    @default(0)
+  custoMedio Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  @@map("saldo_estoque")
+}
+
+model MovimentacaoEstoque {
+  id                  String           @id @default(cuid())
+  empresaId           String
+  produtoId           String
+  tipo                TipoMovimentacao
+  quantidade          Float
+  custoUnitario       Int
+  custoTotal          Int
+  saldoAnterior       Float
+  saldoPosterior      Float
+  custoMedioAntes     Int
+  custoMedioApos      Int
+  dataMovimento       DateTime         @default(now())
+  notaFiscalId        String?
+  notaCompraId        String?
+  ajusteJustificativa String?
+  aprovadoPor         String?
+  observacoes         String?
+  createdAt           DateTime         @default(now())
+  criadoPor           String
+
+  empresa    Empresa     @relation(fields: [empresaId], references: [id])
+  produto    Produto     @relation(fields: [produtoId], references: [id])
+  notaFiscal NotaFiscal? @relation(fields: [notaFiscalId], references: [id])
+  notaCompra NotaCompra? @relation(fields: [notaCompraId], references: [id])
+
+  @@index([empresaId, produtoId])
+  @@index([empresaId, dataMovimento])
+  @@map("movimentacoes_estoque")
+}
+
+// ═══════════════════════════════════════════════════════
+// FINANCEIRO
+// ═══════════════════════════════════════════════════════
+
+model ContaReceber {
+  id              String      @id @default(cuid())
+  empresaId       String
+  clienteId       String
+  notaFiscalId    String?     @unique
+  descricao       String
+  valor           Int
+  valorRecebido   Int         @default(0)
+  status          StatusConta @default(ABERTO)
+  categoria       String?
+  dataVencimento  DateTime
+  dataRecebimento DateTime?
+  formaPagamento  String?
+  observacoes     String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  empresa      Empresa           @relation(fields: [empresaId], references: [id])
+  cliente      ClienteFornecedor @relation(fields: [clienteId], references: [id])
+  notaFiscal   NotaFiscal?       @relation(fields: [notaFiscalId], references: [id])
+  conciliacoes Conciliacao[]
+
+  @@index([empresaId, status])
+  @@index([empresaId, dataVencimento])
+  @@map("contas_receber")
+}
+
+model ContaPagar {
+  id                  String      @id @default(cuid())
+  empresaId           String
+  fornecedorId        String?
+  notaCompraId        String?     @unique
+  descricao           String
+  valor               Int
+  valorPago           Int         @default(0)
+  status              StatusConta @default(ABERTO)
+  categoria           String?
+  dataVencimento      DateTime
+  dataPagamento       DateTime?
+  formaPagamento      String?
+  aprovacaoNecessaria Boolean     @default(false)
+  aprovadoPor         String?
+  dataAprovacao       DateTime?
+  observacoes         String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  empresa      Empresa            @relation(fields: [empresaId], references: [id])
+  fornecedor   ClienteFornecedor? @relation(fields: [fornecedorId], references: [id])
+  notaCompra   NotaCompra?        @relation(fields: [notaCompraId], references: [id])
+  conciliacoes Conciliacao[]
+
+  @@index([empresaId, status])
+  @@index([empresaId, dataVencimento])
+  @@map("contas_pagar")
+}
+
+model ContaBancaria {
+  id           String    @id @default(cuid())
+  empresaId    String
+  nomeBanco    String
+  codigoBanco  String
+  agencia      String
+  conta        String
+  digito       String?
+  tipo         TipoConta
+  saldoInicial Int       @default(0)
+  dataInicial  DateTime
+  ativa        Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
+  empresa              Empresa              @relation(fields: [empresaId], references: [id])
+  lancamentosBancarios LancamentoBancario[]
+
+  @@map("contas_bancarias")
+}
+
+model LancamentoBancario {
+  id              String   @id @default(cuid())
+  empresaId       String
+  contaBancariaId String
+  data            DateTime
+  descricao       String
+  valor           Int
+  tipo            String
+  fitId           String
+  conciliado      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  empresa       Empresa       @relation(fields: [empresaId], references: [id])
+  contaBancaria ContaBancaria @relation(fields: [contaBancariaId], references: [id])
+  conciliacoes  Conciliacao[]
+
+  @@unique([contaBancariaId, fitId])
+  @@index([empresaId, data])
+  @@index([empresaId, conciliado])
+  @@map("lancamentos_bancarios")
+}
+
+model Conciliacao {
+  id                   String   @id @default(cuid())
+  empresaId            String
+  lancamentoBancarioId String
+  contaReceberId       String?
+  contaPagarId         String?
+  tipo                 String
+  createdAt            DateTime @default(now())
+  criadoPor            String
+
+  empresa            Empresa            @relation(fields: [empresaId], references: [id])
+  lancamentoBancario LancamentoBancario @relation(fields: [lancamentoBancarioId], references: [id])
+  contaReceber       ContaReceber?      @relation(fields: [contaReceberId], references: [id])
+  contaPagar         ContaPagar?        @relation(fields: [contaPagarId], references: [id])
+
+  @@map("conciliacoes")
+}
+
+// ═══════════════════════════════════════════════════════
+// SPED
+// ═══════════════════════════════════════════════════════
+
+model SpedArquivo {
+  id            String   @id @default(cuid())
+  empresaId     String
+  mesReferencia Int
+  anoReferencia Int
+  tipoSped      String   @default("FISCAL")
+  status        String   @default("GERADO")
+  totalLinhas   Int
+  hashMd5       String
+  storagePath   String
+  geradoPor     String
+  createdAt     DateTime @default(now())
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+
+  @@unique([empresaId, mesReferencia, anoReferencia, tipoSped])
+  @@map("sped_arquivos")
+}

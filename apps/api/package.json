@@ -1,0 +1,40 @@
+{
+  "name": "@sigef/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "fastify": "^4.28.0",
+    "@fastify/jwt": "^9.0.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "fastify-plugin": "^4.5.1",
+    "@sigef/db": "workspace:*",
+    "@sigef/types": "workspace:*",
+    "@sigef/validators": "workspace:*",
+    "@sigef/fiscal": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.23.0",
+    "date-fns": "^3.6.0",
+    "xlsx": "^0.18.5",
+    "resend": "^3.2.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "@sentry/node": "^8.7.0",
+    "pino-pretty": "^11.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "tsx": "^4.15.0",
+    "vitest": "^1.6.0"
+  }
+}
