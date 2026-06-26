@@ -5,6 +5,7 @@ import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import { jwtPlugin } from './presentation/plugins/jwt.plugin';
 import { loginRoutes } from './presentation/routes/auth/login.route';
+import { focusNfeHealthRoutes } from './presentation/routes/health/focus-nfe-health.route';
 
 const app = Fastify({
   logger: {
@@ -27,9 +28,19 @@ app.register(jwtPlugin);
 
 // Rotas
 app.register(loginRoutes);
+app.register(focusNfeHealthRoutes);
 
 // Health check
-app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/health', async () => ({
+  status: 'ok',
+  versao: '1.0.0',
+  ambiente: process.env.NODE_ENV ?? 'development',
+  timestamp: new Date().toISOString(),
+  servicos: {
+    banco: 'ok',
+    focusNfe: process.env.FOCUS_NFE_TOKEN ? 'configurado' : 'sem token',
+  },
+}));
 
 // TODO: Registrar rotas dos módulos
 // app.register(cadastrosRoutes, { prefix: '/api/cadastros' });
