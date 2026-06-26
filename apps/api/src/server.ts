@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import { jwtPlugin } from './presentation/plugins/jwt.plugin';
+import { loginRoutes } from './presentation/routes/auth/login.route';
 
 const app = Fastify({
   logger: {
@@ -21,6 +23,10 @@ app.register(cors, {
 });
 app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
+app.register(jwtPlugin);
+
+// Rotas
+app.register(loginRoutes);
 
 // Health check
 app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
