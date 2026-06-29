@@ -41,3 +41,4 @@ packages/db/generated/
 *.p12
 .vercel
 .env*
+!packages/db/src/generated/
