@@ -560,7 +560,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/leticia/projects/sigef/packages/db/src/generated/client",
+      "value": "/home/anthony/IdeaProjects/Material - REST-SpringBoot/Vault/packages/db/src/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -574,7 +574,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/leticia/projects/sigef/packages/db/prisma/schema.prisma",
+    "sourceFilePath": "/home/anthony/IdeaProjects/Material - REST-SpringBoot/Vault/packages/db/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

@@ -4,6 +4,22 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "NEXTAUTH_SECRET",
+        "NEXTAUTH_URL",
+        "API_URL",
+        "NEXT_PUBLIC_API_URL",
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY",
+        "ENCRYPTION_KEY",
+        "FOCUS_NFE_TOKEN",
+        "FOCUS_NFE_BASE_URL",
+        "NODE_ENV",
+        "PORT"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@sigef/types', '@sigef/validators'],
+  transpilePackages: ['@sigef/types', '@sigef/validators', '@sigef/db'],
   experimental: { typedRoutes: true },
 };
 
