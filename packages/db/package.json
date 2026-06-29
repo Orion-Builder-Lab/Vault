@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
@@ -11,10 +14,10 @@
     "db:reset": "prisma migrate reset --force"
   },
   "dependencies": {
-    "@prisma/client": "^5.14.0"
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
-    "prisma": "^5.14.0",
+    "prisma": "^5.22.0",
     "tsx": "^4.15.0",
     "typescript": "^5.4.0",
     "@types/node": "^20.0.0",
