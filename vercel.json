@@ -1,9 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "apps/web/package.json",
-      "use": "@vercel/next"
-    }
-  ]
+  "installCommand": "pnpm install",
+  "buildCommand": "turbo run build --filter=@sigef/web...",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
 }
