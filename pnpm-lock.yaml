@@ -211,6 +211,9 @@ importers:
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
     devDependencies:
       '@types/bcryptjs':
         specifier: ^2.4.6
@@ -224,9 +227,6 @@ importers:
       tsx:
         specifier: ^4.15.0
         version: 4.22.4
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
 
   packages/fiscal:
     dependencies:
