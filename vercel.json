@@ -1,5 +1,5 @@
 {
-  "installCommand": "pnpm install && cd packages/db && npx prisma generate --schema=./prisma/schema.prisma",
+  "installCommand": "pnpm install",
   "buildCommand": "turbo run build --filter=@sigef/web...",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs"

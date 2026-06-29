@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "npx prisma generate --schema=./prisma/schema.prisma && tsc",
     "dev": "tsc --watch",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
@@ -25,5 +25,8 @@
   },
   "exports": {
     ".": "./src/index.ts"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   }
 }
