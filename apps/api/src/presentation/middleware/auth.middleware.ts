@@ -1,3 +1,4 @@
+import '@fastify/jwt';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { Role } from '@sigef/db';
 
