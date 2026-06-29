@@ -3,15 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "build": "tsc",
     "dev": "tsc --watch",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio",
+    "db:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=./prisma/schema.prisma",
     "db:seed": "tsx src/seed.ts",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"

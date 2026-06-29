@@ -39,3 +39,5 @@ packages/db/generated/
 # Uploads / temp
 *.pfx
 *.p12
+.vercel
+.env*
