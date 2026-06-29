@@ -85,7 +85,7 @@ export async function loginRoutes(fastify: FastifyInstance) {
       }
 
       return reply.code(200).send({
-        empresas: usuario.empresas.map((ue) => ({
+        empresas: usuario.empresas.map((ue: any) => ({
           id: ue.empresa.id,
           nome: ue.empresa.nomeFantasia ?? ue.empresa.razaoSocial,
           cnpj: ue.empresa.cnpj,

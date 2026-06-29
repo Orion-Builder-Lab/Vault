@@ -1,6 +1,6 @@
 {
   "installCommand": "pnpm install",
-  "buildCommand": "turbo run build --filter=@sigef/web...",
+  "buildCommand": "cd packages/db && npx prisma generate --schema=./prisma/schema.prisma && cd ../.. && turbo run build --filter=@sigef/web...",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs"
 }
