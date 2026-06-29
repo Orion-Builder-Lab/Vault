@@ -208,6 +208,9 @@ importers:
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
@@ -218,9 +221,6 @@ importers:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.42
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
