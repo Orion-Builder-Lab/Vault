@@ -2,7 +2,7 @@ import type { FocusNfePort } from '../../../domain/ports/fiscal/focus-nfe.port';
 
 export class FocusNfeClient implements FocusNfePort {
   private get baseUrl(): string {
-    return process.env.FOCUS_NFE_BASE_URL ?? 'https://api.focusnfe.com.br';
+    return process.env.FOCUS_NFE_BASE_URL ?? 'https://homologacao.focusnfe.com.br';
   }
 
   private get token(): string {
